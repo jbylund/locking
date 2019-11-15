@@ -2,8 +2,10 @@ import fcntl
 import os
 import tempfile
 import time
+import random
 
 from .. import BaseLock, CouldNotLockException
+
 
 class FileLock(BaseLock):
     @staticmethod
@@ -13,30 +15,51 @@ class FileLock(BaseLock):
             with tempfile.NamedTemporaryFile(dir=tfdir) as tfh:
                 pass
             return tfdir
-        except:
+        except Exception as oops:
+            raise
             return tempfile.gettempdir()
 
     lockdir = get_lockdir.__func__()
     def __init__(self, lockname=None, block=False):
         super(FileLock, self).__init__(lockname=lockname, block=block)
-        self.lockfilename = os.path.join(self.lockdir, lockname)
-        self.lockfilehandle = open(self.lockfilename, 'w')
+        self.lockname = "_".join(self.lockname.split('/'))
+        self._lock_file = os.path.join(self.lockdir, self.lockname)
+        self._lock_file_fd = None
 
-    def __enter__(self):
-        flags = fcntl.LOCK_EX
-        if self.block:
-            pass # whatever
-        else:
-            flags |= fcntl.LOCK_NB
-        try:
-            fcntl.flock(self.lockfilehandle, flags)
-        except IOError:
-            raise CouldNotLockException()
-        return self
+    def acquire(self, blocking=True, timeout=-1):
+        blocking = bool(blocking)
+        self.check_args(blocking, timeout)
+        ask_time = time.time()
+        while True:
+            open_mode = os.O_RDWR | os.O_CREAT | os.O_TRUNC
+            fd = os.open(self._lock_file, open_mode)
+            try:
+                fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                self._lock_file_fd = fd
+                self._locked = True
+                return True
+            except (IOError, OSError):
+                os.close(fd)
+                # did not get the lock this attempt
+                if not blocking:
+                    return False
+                if 0 <= timeout:
+                    wait_time = time.time() - ask_time
+                    print("waited {}s".format(wait_time))
+                    if timeout < wait_time:
+                        return False
+                self._wait()
 
-    def __exit__(self, err_type, err_val, err_tb):
-        self.lockfilehandle.close() # I think closing is enough to release?
+    def release(self):
+        fd = self._lock_file_fd
+        if fd is None:
+            return
+        self._lock_file_fd = None
+        fcntl.flock(fd, fcntl.LOCK_UN)
+        self._locked = False
+        os.close(fd)
 
-    def __str__(self):
-        return 'FileLock("{}")'.format(self.lockname)
+    if True:
+        def __del__(self):
+            self.release()
 

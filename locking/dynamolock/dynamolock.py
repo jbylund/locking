@@ -2,13 +2,15 @@
 # my pid and instance uniquely identify myself
 import os
 import random
-import sys
 import threading
 import time
 
-from .. import BaseLock, CouldNotLockException
 import boto3
 from botocore.errorfactory import ClientError
+
+from .. import BaseLock, CouldNotLockException
+
+from .heartbeater import HeartBeater
 
 def get_host_id():
     try:
@@ -17,45 +19,25 @@ def get_host_id():
     except:
         return "?"
 
-class HeartBeater(threading.Thread):
-    """the job of this class is just to keep checking in to keep the lock up to date"""
-    def __init__(self, interval=25, heartbeat=lambda: True, exit_flag=None):
-        super(HeartBeater, self).__init__()
-        assert exit_flag is not None
-        self.daemon = True # daemon thread so that when the parent exits it will disappear (we're going to try to clean it up anyways)
-        self.interval = interval # this is how frequently to check in
-        self.heartbeat = heartbeat # this is the check-in function
-        self.exit_flag = exit_flag
-        self.jitter = 0.1
-
-    def get_sleep(self):
-        base = (1 - self.jitter) * self.interval
-        jitter = self.jitter * random.random() * self.interval
-        return base + jitter
-
-    def run(self):
-        while not self.exit_flag.wait(self.get_sleep()): # keep heartbeating while we can
-            try:
-                self.heartbeat()
-            except Exception as oops:
-                print(oops, file=sys.stderr)
-
-
 class DynamoLock(BaseLock):
-    def __init__(self, lockname, table="locks", checkpoint_frequency=2, ttl=5):
+    def __init__(self, lockname=None, table="locks", checkpoint_frequency=2, ttl=5):
+        super(DynamoLock, self).__init__(lockname=lockname)
         self.client = boto3.client('dynamodb', region_name='us-east-1')
         self.checkpoint_frequency = checkpoint_frequency
         self.host_id = get_host_id()
-        self.lockname = lockname
         self.pid = str(os.getpid())
         self.ttl = ttl
         self.table = table
         self.spin_frequency = 0.5
         self.exit_flag = threading.Event()
-        self.heartbeater = HeartBeater(
+        self.heartbeater = None
+
+    def get_heartbeater(self):
+        self.exit_flag.clear()
+        return HeartBeater(
             heartbeat=self.beat,
             exit_flag=self.exit_flag,
-            interval=checkpoint_frequency
+            interval=self.checkpoint_frequency,
         )
 
     def getitem(self):
@@ -93,24 +75,54 @@ class DynamoLock(BaseLock):
             }
         )
 
-    def __enter__(self, block=True):
+    def acquire(self, blocking=True, timeout=-1):
+        blocking = bool(blocking)
+        self.check_args(blocking, timeout)
         start = time.time()
         while True:
             try:
                 self.beat()
+                self._locked = True
                 break
             except ClientError as oops:
-                if block is False or (block is not True and time.time() - start < block):
-                    raise CouldNotLockException()
+                if oops.response['Error']['Code'] == 'ResourceNotFoundException':
+                    self._create_table()
+                    continue
+                if blocking is False:
+                    return False
+                if timeout < time.time() - start:
+                    return False
                 time.sleep(
                     self.spin_frequency * 2 *
                     random.random()
                 )
+        self.heartbeater = self.get_heartbeater()
         self.heartbeater.start()
+        return True
 
-    def __exit__(self, errtype, errval, errtb):
-        if errtype:
-            pass
+    def _create_table(self):
+        response = self.client.create_table(
+            AttributeDefinitions=[
+                {
+                    "AttributeName": "lockname",
+                    "AttributeType": "S",
+                },
+            ],
+            TableName=self.table,
+            KeySchema=[
+                {
+                    "AttributeName": "lockname",
+                    "KeyType": "HASH",
+                },
+            ],
+            ProvisionedThroughput={
+                "ReadCapacityUnits": 25,
+                "WriteCapacityUnits": 25,
+            },
+        )
+
+
+    def release(self):
         try:
             self.client.delete_item(
                 TableName=self.table,
@@ -129,18 +141,8 @@ class DynamoLock(BaseLock):
                     }
                 }
             )
-        except ClientError as oops:
-            pass
-
-def main():
-    print("asking for lock at", time.time())
-    with DynamoLock("foolock") as foo:
-        print("lock acquired at", time.time())
-        time.sleep(10)
-        a = 1 / 0
-        print("releasing lock at", time.time())
-    print("lock released at", time.time())
-
-
-if "__main__" == __name__:
-    main()
+        except ClientError:  # what can happen here?
+            pass # it's only a best effort to release the lock
+        self.exit_flag.set()
+        self.heartbeater.join()
+        self._locked = False

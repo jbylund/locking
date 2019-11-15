@@ -1,12 +1,15 @@
-from socket import gethostname
-from os import getpid
-import redis
 import json
-import time
-import threading
 import random
+import sys
+import threading
+import time
+from os import getpid
+from socket import gethostname
+
+import redis
 
 from .. import BaseLock, CouldNotLockException
+
 
 class HeartBeater(threading.Thread):
     """the job of this class is just to keep checking in to keep the lock up to date"""
@@ -104,9 +107,8 @@ class RedisLock(BaseLock):
         except Exception as oops:
             print(oops)
 
-    def __exit__(self, err_type, err_val, err_trace):
+    def release(self):
         self.exit_flag.set()  # after this it shouldn't heartbeat anymore
         self.conn.delete(self.lockname)  # try to remove the lock from redis
         self.heartbeater.join()  # join the thread...
         self.disconnect()
-

@@ -1,12 +1,10 @@
 """Lock implementation using posix virtual sockets."""
+import errno
+import random
 import socket
 import time
-import random
-import errno
 
 from .. import BaseLock
-
-TIMEOUT_MAX = BaseLock.TIMEOUT_MAX
 
 
 class SocketLock(BaseLock):
@@ -21,15 +19,7 @@ class SocketLock(BaseLock):
     def acquire(self, blocking=True, timeout=-1):
         """Attempt to acquire the lock, returning True on success, False on failure."""
         blocking = bool(blocking)
-        if blocking:
-            if timeout < 0:
-                if timeout != -1:
-                    raise ValueError("Cannot set negative timeout on blocking lock.")
-            if TIMEOUT_MAX < timeout:
-                raise OverflowError("Cannot set a timeout greater than TIMEOUT_MAX ({}).".format(TIMEOUT_MAX))
-        else:
-            if timeout >= 0:
-                raise ValueError("Cannot set timeout on non-blocking lock.")
+        self.check_args(blocking, timeout)
         ask_time = time.time()
         while True:
             try:
