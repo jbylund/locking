@@ -1,1 +1,1 @@
-from dynamolock import DynamoLock
+from .dynamolock import DynamoLock

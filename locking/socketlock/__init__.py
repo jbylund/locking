@@ -1,1 +1,1 @@
-from socketlock import SocketLock
+from .socketlock import SocketLock

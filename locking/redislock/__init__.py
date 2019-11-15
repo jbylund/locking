@@ -1,1 +1,1 @@
-from redislock import RedisLock
+from .redislock import RedisLock

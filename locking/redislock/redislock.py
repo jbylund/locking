@@ -32,7 +32,7 @@ class HeartBeater(threading.Thread):
             try:
                 self.heartbeat()
             except Exception as oops:
-                print >> sys.stderr, oops
+                print(oops, file=sys.stderr)
 
 
 class RedisLock(BaseLock):
@@ -78,7 +78,7 @@ class RedisLock(BaseLock):
             'pid': getpid(),
         }
 
-    def __enter__(self):
+    def acquire(self, blocking=True, timeout=-1):
         if self.block:
             while not self.conn.setnx(
                 self.lockname,
@@ -93,16 +93,16 @@ class RedisLock(BaseLock):
                 if -1 == self.conn.ttl(self.lockname):  # if it doesn't have an expiry
                     self.conn.expire(self.lockname, self.duration)  # set one
                 self.disconnect()
-                raise CouldNotLockException(
-                    """Could not get "{}" lock!""".format(self.lockname))
+                return False
         self.conn.expire(self.lockname, self.duration)
         self.heartbeater.start()
+        return True
 
     def disconnect(self):
         try:
             self.conn.connection_pool.disconnect()
         except Exception as oops:
-            print oops
+            print(oops)
 
     def __exit__(self, err_type, err_val, err_trace):
         self.exit_flag.set()  # after this it shouldn't heartbeat anymore

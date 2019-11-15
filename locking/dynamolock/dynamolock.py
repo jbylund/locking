@@ -6,6 +6,7 @@ import sys
 import threading
 import time
 
+from .. import BaseLock, CouldNotLockException
 import boto3
 from botocore.errorfactory import ClientError
 
@@ -15,9 +16,6 @@ def get_host_id():
             return hostname.read()
     except:
         return "?"
-
-class CouldNotLockException(Exception):
-    pass
 
 class HeartBeater(threading.Thread):
     """the job of this class is just to keep checking in to keep the lock up to date"""
@@ -40,10 +38,10 @@ class HeartBeater(threading.Thread):
             try:
                 self.heartbeat()
             except Exception as oops:
-                print >> sys.stderr, oops
+                print(oops, file=sys.stderr)
 
 
-class DynamoLock(object):
+class DynamoLock(BaseLock):
     def __init__(self, lockname, table="locks", checkpoint_frequency=2, ttl=5):
         self.client = boto3.client('dynamodb', region_name='us-east-1')
         self.checkpoint_frequency = checkpoint_frequency
@@ -135,13 +133,13 @@ class DynamoLock(object):
             pass
 
 def main():
-    print "asking for lock at", time.time()
+    print("asking for lock at", time.time())
     with DynamoLock("foolock") as foo:
-        print "lock acquired at", time.time()
+        print("lock acquired at", time.time())
         time.sleep(10)
         a = 1 / 0
-        print "releasing lock at", time.time()
-    print "lock released at", time.time()
+        print("releasing lock at", time.time())
+    print("lock released at", time.time())
 
 
 if "__main__" == __name__:

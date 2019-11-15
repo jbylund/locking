@@ -1,1 +1,1 @@
-from filelock import FileLock
+from .filelock import FileLock
