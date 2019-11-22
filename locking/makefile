@@ -2,4 +2,4 @@
 .PHONY: tests
 
 tests: 
-	python -m pytest -vvv -x -s --full-trace
+	timeout 90s -- python -m pytest > /dev/null || timeout 90s -- python -m pytest -vvv --last-failed
