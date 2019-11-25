@@ -11,7 +11,6 @@ from .. import BaseLock
 from .heartbeater import HeartBeater
 
 
-
 class RedisLock(BaseLock):
     """simple lock against redis"""
 
@@ -28,6 +27,7 @@ class RedisLock(BaseLock):
     def get_heartbeater(self):
         sub_conn = self.conn
         # sub_conn = self.get_conn(app_name="heartbeater")
+
         def heartbeat():
             refreshed = sub_conn.set(
                 self.lockname,
@@ -35,6 +35,7 @@ class RedisLock(BaseLock):
                 px=self.duration,
                 xx=True,
             )
+
         def release():
             self.exit_flag.clear()
             sub_conn.delete(self.lockname)

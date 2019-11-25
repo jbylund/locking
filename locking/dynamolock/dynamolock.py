@@ -14,18 +14,22 @@ from .. import BaseLock, CouldNotLockException
 
 from .heartbeater import HeartBeater
 
+
 def get_host_id():
     try:
         with open('/etc/hostname') as hostname:
             return hostname.read().strip()
-    except:
+    except Exception:
         return "?"
+
 
 def randstr():
     return "".join(random.choice(string.ascii_lowercase) for _ in range(16))
 
+
 def pack(local_shape):
     pass
+
 
 def unpack(aws_shape):
     return {
@@ -41,8 +45,8 @@ class DynamoLock(BaseLock):
         self.client = boto3.client('dynamodb', region_name='us-east-1')
         self.checkpoint_frequency = checkpoint_frequency
         self.host_id = get_host_id()
-        self.pid = str(os.getpid()) # this is weird, but boto3 wants to get the values as strings, even if they're ints
-        self.lockid = str(random.randint(10**16,10**20))
+        self.pid = str(os.getpid())  # this is weird, but boto3 wants to get the values as strings, even if they're ints
+        self.lockid = str(random.randint(10**16, 10**20))
         self.ttl = ttl
         self.table = table
         self.spin_frequency = 0.5
@@ -69,7 +73,7 @@ class DynamoLock(BaseLock):
                     ExpressionAttributeValues={
                         ":host": {"S": host_id},
                         ":lockid": {"N": lockid},
-                        ":now": {"N": str(time.time()),},
+                        ":now": {"N": str(time.time()), },
                         ":pid": {"N": pid},
                     }
                 )
@@ -127,7 +131,7 @@ class DynamoLock(BaseLock):
             ExpressionAttributeValues={
                 ":host": {"S": self.host_id},
                 ":lockid": {"N": self.lockid},
-                ":now": {"N": str(time.time()),},
+                ":now": {"N": str(time.time()), },
                 ":pid": {"N": self.pid},
             }
         )
@@ -156,7 +160,6 @@ class DynamoLock(BaseLock):
                     return False
             self._wait()
 
-
     def _create_table(self):
         response = self.client.create_table(
             AttributeDefinitions=[
@@ -178,7 +181,6 @@ class DynamoLock(BaseLock):
             },
         )
 
-
     def release(self):
         try:
             self.client.delete_item(
@@ -199,7 +201,7 @@ class DynamoLock(BaseLock):
                 }
             )
         except ClientError:  # what can happen here?
-            pass # it's only a best effort to release the lock
+            pass  # it's only a best effort to release the lock
         self.exit_flag.set()
         if self.heartbeater:
             self.heartbeater.join()

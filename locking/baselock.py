@@ -7,6 +7,7 @@ from .utils import get_caller
 
 TIMEOUT_MAX = int(sys.maxsize / 10**9)
 
+
 class BaseLock(object):
 
     def __init__(self, lockname=None, block=True):
@@ -27,7 +28,7 @@ class BaseLock(object):
             self.__class__.__module__,
             self.__class__.__qualname__,
             hex(id(self))
-        ) # do I need to add owner/count?
+        )  # do I need to add owner/count?
 
     def locked(self):
         return self._locked

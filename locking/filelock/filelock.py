@@ -20,6 +20,7 @@ class FileLock(BaseLock):
             return tempfile.gettempdir()
 
     lockdir = get_lockdir.__func__()
+
     def __init__(self, lockname=None, block=False):
         super(FileLock, self).__init__(lockname=lockname, block=block)
         self.lockname = "_".join(self.lockname.split('/'))
@@ -61,4 +62,3 @@ class FileLock(BaseLock):
     if True:
         def __del__(self):
             self.release()
-

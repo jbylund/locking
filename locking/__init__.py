@@ -1,3 +1,7 @@
+"""
+xxx
+"""
+
 class CouldNotLockException(Exception):
     pass
 

@@ -1,3 +1,5 @@
+from .. import DynamoLock, FileLock, RedisLock, SocketLock
+import lock_tests
 import threading
 import time
 import unittest
@@ -5,14 +7,10 @@ from _thread import start_new_thread, TIMEOUT_MAX
 
 RUNNING_ON_CI = True
 # try:
-    # RUNNING_ON_CI = True
-import lock_tests
+# RUNNING_ON_CI = True
 # except ImportError:
-    # RUNNING_ON_CI = False
-    # from test import lock_tests, support
-
-
-from .. import DynamoLock, FileLock, RedisLock, SocketLock
+# RUNNING_ON_CI = False
+# from test import lock_tests, support
 
 
 if True:
@@ -21,7 +19,6 @@ if True:
 
     class FileLockTests(lock_tests.LockTests):
         locktype = staticmethod(FileLock)
-
 
     if not RUNNING_ON_CI:
         class DynamoLockTests(lock_tests.LockTests):
@@ -32,7 +29,6 @@ if True:
                     if hasattr(ithread, 'exit_flag'):
                         ithread.exit_flag.set()
                         ithread.join()
-
 
             def test_reacquire(self):
                 """Copied in because the wait_threads_exit """
@@ -61,9 +57,11 @@ if True:
             def test_thread_leak(self):
                 pass
 
+
 def _wait():
     # A crude wait/yield function not relying on synchronization primitives.
     time.sleep(0.01)
+
 
 class RedisLockTests(lock_tests.LockTests):
     locktype = staticmethod(RedisLock)
@@ -76,7 +74,6 @@ class RedisLockTests(lock_tests.LockTests):
             if hasattr(ithread, 'exit_flag'):
                 ithread.exit_flag.set()
                 ithread.join()
-
 
     def test_reacquire(self):
         """Copied in because the wait_threads_exit """
@@ -101,4 +98,3 @@ class RedisLockTests(lock_tests.LockTests):
                 _wait()
             self.assertEqual(len(phase), 2)
             lock.release()
-
