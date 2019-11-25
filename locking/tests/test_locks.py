@@ -7,7 +7,6 @@ RUNNING_ON_CI = True
 # try:
     # RUNNING_ON_CI = True
 import lock_tests
-import support
 # except ImportError:
     # RUNNING_ON_CI = False
     # from test import lock_tests, support
@@ -47,7 +46,7 @@ if True:
                     lock.acquire()
                     phase.append(None)
 
-                with support.wait_threads_exit(timeout=5):
+                with lock_tests.support.wait_threads_exit(timeout=5):
                     start_new_thread(f, ())
                     while len(phase) == 0:
                         _wait()
@@ -91,7 +90,7 @@ class RedisLockTests(lock_tests.LockTests):
             lock.acquire()
             phase.append(None)
 
-        with support.wait_threads_exit(timeout=5):
+        with lock_tests.support.wait_threads_exit(timeout=5):
             start_new_thread(f, ())
             while len(phase) == 0:
                 _wait()
