@@ -2,7 +2,6 @@ from .. import DynamoLock, FileLock, RedisLock, SocketLock
 import lock_tests
 import threading
 import time
-import unittest
 from _thread import start_new_thread, TIMEOUT_MAX
 
 RUNNING_ON_CI = True

@@ -2,7 +2,6 @@ import fcntl
 import os
 import tempfile
 import time
-import random
 
 from .. import BaseLock, CouldNotLockException
 

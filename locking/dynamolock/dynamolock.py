@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # my pid and instance uniquely identify myself
-import json
 import os
 import random
 import string

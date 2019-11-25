@@ -1,5 +1,4 @@
 import json
-import random
 import threading
 import time
 from os import getpid
@@ -26,10 +25,9 @@ class RedisLock(BaseLock):
 
     def get_heartbeater(self):
         sub_conn = self.conn
-        # sub_conn = self.get_conn(app_name="heartbeater")
 
         def heartbeat():
-            refreshed = sub_conn.set(
+            sub_conn.set(
                 self.lockname,
                 json.dumps(self.get_contents()),
                 px=self.duration,
@@ -39,6 +37,7 @@ class RedisLock(BaseLock):
         def release():
             self.exit_flag.clear()
             sub_conn.delete(self.lockname)
+
         return HeartBeater(
             heartbeat=heartbeat,
             exit_flag=self.exit_flag,
