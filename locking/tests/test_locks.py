@@ -3,14 +3,14 @@ import time
 import unittest
 from _thread import start_new_thread, TIMEOUT_MAX
 
-RUNNING_ON_CI = False
-try:
-    RUNNING_ON_CI = True
-    import lock_tests
-    import support
-except ImportError:
-    RUNNING_ON_CI = False
-    from test import lock_tests, support
+RUNNING_ON_CI = True
+# try:
+    # RUNNING_ON_CI = True
+import lock_tests
+import support
+# except ImportError:
+    # RUNNING_ON_CI = False
+    # from test import lock_tests, support
 
 
 from .. import DynamoLock, FileLock, RedisLock, SocketLock
