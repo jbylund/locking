@@ -45,7 +45,6 @@ class FileLock(BaseLock):
                     return False
                 if 0 <= timeout:
                     wait_time = time.time() - ask_time
-                    print("waited {}s".format(wait_time))
                     if timeout < wait_time:
                         return False
                 self._wait()

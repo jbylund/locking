@@ -49,8 +49,8 @@ class SocketLock(BaseLock):
 
     def release(self):
         """Release the lock."""
-        if not self._locked:
-            raise AssertionError("Cannot release an open lock.")
+        # if not self._locked:
+            # raise AssertionError("Cannot release an open lock.")
         self._lock_socket.shutdown(socket.SHUT_WR)
         self._lock_socket.close()
         # there is a race condition right here...

@@ -47,4 +47,7 @@ class BaseLock(object):
                 raise ValueError("Cannot set timeout on non-blocking lock.")
 
     def _wait(self):
-        time.sleep(random.random() * 0.005)
+        time.sleep(random.random() * 0.5)
+
+    def __del__(self):
+        self.release()
