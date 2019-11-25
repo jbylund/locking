@@ -12,9 +12,9 @@ class HeartBeater(threading.Thread):
         """Construct the heartbeater thread object."""
         super(HeartBeater, self).__init__()
         assert exit_flag is not None
-        self.daemon = True # daemon thread so that when the parent exits it will disappear (we're going to try to clean it up anyways)
-        self.interval = interval # this is how frequently to check in
-        self.heartbeat = heartbeat # this is the check-in function
+        self.daemon = True  # daemon thread so that when the parent exits it will disappear (we're going to try to clean it up anyways)
+        self.interval = interval  # this is how frequently to check in
+        self.heartbeat = heartbeat  # this is the check-in function
         self.exit_flag = exit_flag
         self.jitter = 0.1
         self.release = release

@@ -9,7 +9,7 @@ import time
 import boto3
 from botocore.errorfactory import ClientError
 
-from .. import BaseLock, CouldNotLockException
+from .. import BaseLock
 
 from .heartbeater import HeartBeater
 
@@ -143,7 +143,7 @@ class DynamoLock(BaseLock):
         while True:
             if not self._locked:
                 try:
-                    retval = self.beat()
+                    self.beat() # we're relying on this to raise a clienterror on conflict
                     self._locked = True
                     self.heartbeater = self.get_heartbeater()
                     self.heartbeater.start()
@@ -160,7 +160,7 @@ class DynamoLock(BaseLock):
             self._wait()
 
     def _create_table(self):
-        response = self.client.create_table(
+        self.client.create_table(
             AttributeDefinitions=[
                 {
                     "AttributeName": "lockname",

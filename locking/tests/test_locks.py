@@ -1,8 +1,9 @@
-from .. import DynamoLock, FileLock, RedisLock, SocketLock
-import lock_tests
 import threading
 import time
-from _thread import start_new_thread, TIMEOUT_MAX
+from _thread import start_new_thread
+
+import lock_tests
+from .. import DynamoLock, FileLock, RedisLock, SocketLock
 
 RUNNING_ON_CI = True
 # try:

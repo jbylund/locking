@@ -3,7 +3,7 @@ import os
 import tempfile
 import time
 
-from .. import BaseLock, CouldNotLockException
+from .. import BaseLock
 
 
 class FileLock(BaseLock):
@@ -11,11 +11,10 @@ class FileLock(BaseLock):
     def get_lockdir():
         try:
             tfdir = '/dev/shm'
-            with tempfile.NamedTemporaryFile(dir=tfdir) as tfh:
+            with tempfile.NamedTemporaryFile(dir=tfdir):
                 pass
             return tfdir
-        except Exception as oops:
-            raise
+        except Exception:
             return tempfile.gettempdir()
 
     lockdir = get_lockdir.__func__()
