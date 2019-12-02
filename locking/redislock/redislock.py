@@ -1,7 +1,7 @@
 import json
 import threading
 import time
-from os import getpid
+from os import getpid, environ
 from socket import gethostname
 
 import redis
@@ -16,12 +16,12 @@ class RedisLock(BaseLock):
     def __init__(self, lockname=None, block=False, duration=5, heartbeat_interval=2, hosts=None):
         super(RedisLock, self).__init__(lockname=lockname, block=block)
         self.hosts = hosts or ['127.0.0.1']
-        self.conn = self.get_conn()
         self.exit_flag = threading.Event()
         self.duration = duration * 1000
         self.heartbeat_interval = heartbeat_interval
         self.heartbeater = None
         self._locked = False
+        self.conn = self.get_conn()
 
     def get_heartbeater(self):
         sub_conn = self.conn
@@ -53,7 +53,11 @@ class RedisLock(BaseLock):
             app_name
         )
         for host in self.hosts:
-            conn = redis.StrictRedis(host=host, socket_timeout=1.5)
+            conn = redis.StrictRedis(
+                host=host,
+                port=int(environ.get('REDIS_PORT', 6379)),
+                socket_timeout=1.5,
+            )
             conn.client_setname(app_name)
             conn.info()
             return conn

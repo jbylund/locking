@@ -10,6 +10,7 @@ import boto3
 from botocore.errorfactory import ClientError
 
 from .. import BaseLock
+from ..config import get_boto3_client
 
 from ..heartbeater import HeartBeater
 
@@ -41,7 +42,6 @@ class DynamoLock(BaseLock):
     def __init__(self, lockname=None, table="locks", checkpoint_frequency=2, ttl=5):
         # lockname = lockname or randstr()
         super(DynamoLock, self).__init__(lockname=lockname)
-        self.client = boto3.client('dynamodb', region_name='us-east-1')
         self.checkpoint_frequency = checkpoint_frequency
         self.host_id = get_host_id()
         self.pid = str(os.getpid())  # this is weird, but boto3 wants to get the values as strings, even if they're ints
@@ -51,6 +51,7 @@ class DynamoLock(BaseLock):
         self.spin_frequency = 0.5
         self.exit_flag = threading.Event()
         self.heartbeater = None
+        self.client = get_boto3_client('dynamodb')
 
     def get_heartbeater(self):
         host_id = self.host_id
