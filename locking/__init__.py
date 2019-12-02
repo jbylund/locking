@@ -3,6 +3,10 @@ xxx
 """
 
 
+import getpass
+
+raise AssertionError(getpass.getuser())
+
 from .baselock import BaseLock
 from .dynamolock import DynamoLock
 from .filelock import FileLock
