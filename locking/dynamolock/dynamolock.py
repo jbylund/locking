@@ -11,7 +11,7 @@ from botocore.errorfactory import ClientError
 
 from .. import BaseLock
 
-from .heartbeater import HeartBeater
+from ..heartbeater import HeartBeater
 
 
 def get_host_id():
