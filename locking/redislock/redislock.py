@@ -7,7 +7,7 @@ from socket import gethostname
 import redis
 
 from .. import BaseLock
-from .heartbeater import HeartBeater
+from ..heartbeater import HeartBeater
 
 
 class RedisLock(BaseLock):
