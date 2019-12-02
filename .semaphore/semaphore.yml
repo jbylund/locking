@@ -24,4 +24,5 @@ blocks:
             - >-
               flake8 . --count --exit-zero --max-complexity=10 --max-line-length=160 --statistics
             - sem-service start redis
-            - python -m pytest -vvv
+            - docker run --detach --publish 9123:8000 amazon/dynamodb-local
+            - /usr/bin/time -v timeout 90s python -m pytest -vvv
