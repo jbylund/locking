@@ -82,23 +82,30 @@ class DynamoLock(BaseLock):
 
         def release():
             self.exit_flag.clear()
-            self.client.delete_item(
-                TableName=self.table,
-                Key={
-                    "lockname": {
-                        "S": self.lockname
-                    }
-                },
-                ConditionExpression='pid = :pid and host = :host',
-                ExpressionAttributeValues={
-                    ":pid": {
-                        "N": self.pid
+            try:
+                self.client.delete_item(
+                    TableName=self.table,
+                    Key={
+                        "lockname": {
+                            "S": self.lockname
+                        }
                     },
-                    ":host": {
-                        "S": self.host_id
+                    ConditionExpression='pid = :pid and host = :host',
+                    ExpressionAttributeValues={
+                        ":pid": {
+                            "N": self.pid
+                        },
+                        ":host": {
+                            "S": self.host_id
+                        }
                     }
-                }
-            )
+                )
+            except ClientError as oops:
+                error_code = oops.response['Error']['Code']
+                if error_code == 'ConditionalCheckFailedException':
+                    pass
+                else:
+                    raise
 
         return HeartBeater(
             exit_flag=self.exit_flag,
@@ -150,9 +157,16 @@ class DynamoLock(BaseLock):
                     self.heartbeater.start()
                     return True
                 except ClientError as oops:
-                    if oops.response['Error']['Code'] == 'ResourceNotFoundException':
+                    error_code = oops.response['Error']['Code']
+                    if error_code == 'ResourceNotFoundException':
                         self._create_table()
-                        continue
+                    elif error_code == 'UnrecognizedClientException':
+                        print(dict(sorted(os.environ.items())))
+                        raise
+                    elif error_code in ['ConditionalCheckFailedException']:
+                        pass
+                    else:
+                        print(oops.response)
             if blocking is False:
                 return False
             if 0 < timeout:
