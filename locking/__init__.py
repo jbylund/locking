@@ -1,8 +1,6 @@
 """
 xxx
 """
-
-
 from .baselock import BaseLock
 from .dynamolock import DynamoLock
 from .filelock import FileLock
