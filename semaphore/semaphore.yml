@@ -15,7 +15,7 @@ blocks:
         - name: AWS_ACCESS_KEY_ID
           value: AKIAXXXXXXXXXXXXXXXX
         - name: DYNAMODB_PORT
-          value: 9123
+          value: "9123"
       jobs:
         - name: pytest
           commands:
