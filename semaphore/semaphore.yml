@@ -7,6 +7,15 @@ agent:
 blocks:
   - name: Test
     task:
+      env_vars:
+        - name: AWS_REGION
+          value: us-east-1
+        - name: AWS_SECRET_ACCESS_KEY
+          value: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        - name: AWS_ACCESS_KEY_ID
+          value: AKIAXXXXXXXXXXXXXXXX
+        - name: DYNAMODB_PORT
+          value: "9123"
       jobs:
         - name: pytest
           commands:
@@ -24,5 +33,5 @@ blocks:
             - >-
               flake8 . --count --exit-zero --max-complexity=10 --max-line-length=160 --statistics
             - sem-service start redis
-            - docker run --detach --publish 9123:8000 amazon/dynamodb-local
+            - docker run --detach --publish ${DYNAMODB_PORT}:8000 amazon/dynamodb-local
             - /usr/bin/time -v timeout 90s python -m pytest -vvv
