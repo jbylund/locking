@@ -82,30 +82,7 @@ class DynamoLock(BaseLock):
 
         def release():
             self.exit_flag.clear()
-            try:
-                self.client.delete_item(
-                    TableName=self.table,
-                    Key={
-                        "lockname": {
-                            "S": self.lockname
-                        }
-                    },
-                    ConditionExpression='pid = :pid and host = :host',
-                    ExpressionAttributeValues={
-                        ":pid": {
-                            "N": self.pid
-                        },
-                        ":host": {
-                            "S": self.host_id
-                        }
-                    }
-                )
-            except ClientError as oops:
-                error_code = oops.response['Error']['Code']
-                if error_code == 'ConditionalCheckFailedException':
-                    pass
-                else:
-                    raise
+            self.delete_lock()
 
         return HeartBeater(
             exit_flag=self.exit_flag,
@@ -195,28 +172,35 @@ class DynamoLock(BaseLock):
             },
         )
 
-    def release(self):
+    def delete_lock(self):
         try:
             self.client.delete_item(
                 TableName=self.table,
-                Key={
-                    "lockname": {
-                        "S": self.lockname
-                    }
-                },
-                ConditionExpression='pid = :pid and host = :host',
+                Key={"lockname": {"S": self.lockname}},
+                ConditionExpression=" AND ".join(
+                    [
+                        'host = :host',
+                        'lockid = :lockid',
+                        'pid = :pid',
+                    ]
+                ),
                 ExpressionAttributeValues={
-                    ":pid": {
-                        "N": self.pid
-                    },
-                    ":host": {
-                        "S": self.host_id
-                    }
+                    ":host": {"S": self.host_id},
+                    ":lockid": {"S": self.lockid,},
+                    ":pid": {"N": self.pid},
                 }
             )
-        except ClientError:  # what can happen here?
-            pass  # it's only a best effort to release the lock
+        except ClientError as oops:
+            error_code = oops.response['Error']['Code']
+            if error_code == 'ConditionalCheckFailedException':
+                pass
+            else:
+                raise
+
+    def release(self):
         self.exit_flag.set()
+        if self._locked:
+            self.delete_lock()
         if self.heartbeater:
             self.heartbeater.join()
         self._locked = False
