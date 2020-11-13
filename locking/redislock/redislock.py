@@ -15,7 +15,7 @@ class RedisLock(BaseLock):
 
     def __init__(self, lockname=None, block=False, duration=5, heartbeat_interval=2, hosts=None):
         super(RedisLock, self).__init__(lockname=lockname, block=block)
-        self.hosts = hosts or ['127.0.0.1']
+        self.hosts = hosts or ["127.0.0.1"]
         self.exit_flag = threading.Event()
         self.duration = duration * 1000
         self.heartbeat_interval = heartbeat_interval
@@ -47,29 +47,25 @@ class RedisLock(BaseLock):
 
     def get_conn(self, app_name="master"):
         last_error = None
-        app_name = "{}:{}:{}".format(
-            gethostname(),
-            getpid(),
-            app_name
-        )
+        app_name = "{}:{}:{}".format(gethostname(), getpid(), app_name)
         for host in self.hosts:
             conn = redis.StrictRedis(
                 host=host,
-                port=int(environ.get('REDIS_PORT', 6379)),
+                port=int(environ.get("REDIS_PORT", 6379)),
                 socket_timeout=1.5,
             )
             conn.client_setname(app_name)
             conn.info()
             return conn
-        msg = 'Could not connect to Redis: last_error={}, hosts={}'.format(last_error, self.hosts)
+        msg = "Could not connect to Redis: last_error={}, hosts={}".format(last_error, self.hosts)
         raise Exception(msg)
 
     def get_contents(self):
         """get the contents of the lock (currently the contents are not used)"""
         return {
-            'expiry': time.time() + self.duration,
-            'host': gethostname(),
-            'pid': getpid(),
+            "expiry": time.time() + self.duration,
+            "host": gethostname(),
+            "pid": getpid(),
         }
 
     def acquire(self, blocking=True, timeout=-1):

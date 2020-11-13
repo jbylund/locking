@@ -10,7 +10,7 @@ class FileLock(BaseLock):
     @staticmethod
     def get_lockdir():
         try:
-            tfdir = '/dev/shm'
+            tfdir = "/dev/shm"
             with tempfile.NamedTemporaryFile(dir=tfdir):
                 pass
             return tfdir
@@ -21,7 +21,7 @@ class FileLock(BaseLock):
 
     def __init__(self, lockname=None, block=False):
         super(FileLock, self).__init__(lockname=lockname, block=block)
-        self.lockname = "_".join(self.lockname.split('/'))
+        self.lockname = "_".join(self.lockname.split("/"))
         self._lock_file = os.path.join(self.lockdir, self.lockname)
         self._lock_file_fd = None
 
@@ -58,5 +58,6 @@ class FileLock(BaseLock):
         os.close(fd)
 
     if True:
+
         def __del__(self):
             self.release()

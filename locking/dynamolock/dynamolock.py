@@ -17,7 +17,7 @@ from ..heartbeater import HeartBeater
 
 def get_host_id():
     try:
-        with open('/etc/hostname') as hostname:
+        with open("/etc/hostname") as hostname:
             return hostname.read().strip()
     except Exception:
         return "?"
@@ -32,10 +32,7 @@ def pack(local_shape):
 
 
 def unpack(aws_shape):
-    return {
-        key: val_dict.popitem()[1]
-        for key, val_dict in aws_shape.items()
-    }
+    return {key: val_dict.popitem()[1] for key, val_dict in aws_shape.items()}
 
 
 class DynamoLock(BaseLock):
@@ -45,13 +42,13 @@ class DynamoLock(BaseLock):
         self.checkpoint_frequency = checkpoint_frequency
         self.host_id = get_host_id()
         self.pid = str(os.getpid())  # this is weird, but boto3 wants to get the values as strings, even if they're ints
-        self.lockid = str(random.randint(10**16, 10**20))
+        self.lockid = str(random.randint(10 ** 16, 10 ** 20))
         self.ttl = ttl
         self.table = table
         self.spin_frequency = 0.5
         self.exit_flag = threading.Event()
         self.heartbeater = None
-        self.client = get_boto3_client('dynamodb')
+        self.client = get_boto3_client("dynamodb")
 
     def get_heartbeater(self):
         host_id = self.host_id
@@ -64,18 +61,22 @@ class DynamoLock(BaseLock):
                     TableName=self.table,
                     Item=self.getitem(),
                     ReturnValues="ALL_OLD",
-                    ConditionExpression=" OR ".join([
-                        "attribute_not_exists(lockname)",
-                        "attribute_not_exists(expiry)",
-                        "expiry < :now",
-                        "(host = :host AND pid = :pid AND ( attribute_not_exists(lockid) OR lockid = :lockid ) )",
-                    ]),
+                    ConditionExpression=" OR ".join(
+                        [
+                            "attribute_not_exists(lockname)",
+                            "attribute_not_exists(expiry)",
+                            "expiry < :now",
+                            "(host = :host AND pid = :pid AND ( attribute_not_exists(lockid) OR lockid = :lockid ) )",
+                        ]
+                    ),
                     ExpressionAttributeValues={
                         ":host": {"S": host_id},
                         ":lockid": {"N": lockid},
-                        ":now": {"N": str(time.time()), },
+                        ":now": {
+                            "N": str(time.time()),
+                        },
                         ":pid": {"N": pid},
-                    }
+                    },
                 )
             except ClientError as oops:
                 print(oops)
@@ -106,18 +107,22 @@ class DynamoLock(BaseLock):
             TableName=self.table,
             Item=self.getitem(),
             ReturnValues="ALL_OLD",
-            ConditionExpression=" OR ".join([
-                "attribute_not_exists(lockname)",
-                "attribute_not_exists(expiry)",
-                "expiry < :now",
-                "(host = :host AND pid = :pid AND ( attribute_not_exists(lockid) OR lockid = :lockid ) )",
-            ]),
+            ConditionExpression=" OR ".join(
+                [
+                    "attribute_not_exists(lockname)",
+                    "attribute_not_exists(expiry)",
+                    "expiry < :now",
+                    "(host = :host AND pid = :pid AND ( attribute_not_exists(lockid) OR lockid = :lockid ) )",
+                ]
+            ),
             ExpressionAttributeValues={
                 ":host": {"S": self.host_id},
                 ":lockid": {"N": self.lockid},
-                ":now": {"N": str(time.time()), },
+                ":now": {
+                    "N": str(time.time()),
+                },
                 ":pid": {"N": self.pid},
-            }
+            },
         )
         return response
 
@@ -128,19 +133,19 @@ class DynamoLock(BaseLock):
         while True:
             if not self._locked:
                 try:
-                    self.beat() # we're relying on this to raise a clienterror on conflict
+                    self.beat()  # we're relying on this to raise a clienterror on conflict
                     self._locked = True
                     self.heartbeater = self.get_heartbeater()
                     self.heartbeater.start()
                     return True
                 except ClientError as oops:
-                    error_code = oops.response['Error']['Code']
-                    if error_code == 'ResourceNotFoundException':
+                    error_code = oops.response["Error"]["Code"]
+                    if error_code == "ResourceNotFoundException":
                         self._create_table()
-                    elif error_code == 'UnrecognizedClientException':
+                    elif error_code == "UnrecognizedClientException":
                         print(dict(sorted(os.environ.items())))
                         raise
-                    elif error_code in ['ConditionalCheckFailedException']:
+                    elif error_code in ["ConditionalCheckFailedException"]:
                         pass
                     else:
                         print(oops.response)
@@ -179,20 +184,22 @@ class DynamoLock(BaseLock):
                 Key={"lockname": {"S": self.lockname}},
                 ConditionExpression=" AND ".join(
                     [
-                        'host = :host',
-                        'lockid = :lockid',
-                        'pid = :pid',
+                        "host = :host",
+                        "lockid = :lockid",
+                        "pid = :pid",
                     ]
                 ),
                 ExpressionAttributeValues={
                     ":host": {"S": self.host_id},
-                    ":lockid": {"S": self.lockid,},
+                    ":lockid": {
+                        "S": self.lockid,
+                    },
                     ":pid": {"N": self.pid},
-                }
+                },
             )
         except ClientError as oops:
-            error_code = oops.response['Error']['Code']
-            if error_code == 'ConditionalCheckFailedException':
+            error_code = oops.response["Error"]["Code"]
+            if error_code == "ConditionalCheckFailedException":
                 pass
             else:
                 raise

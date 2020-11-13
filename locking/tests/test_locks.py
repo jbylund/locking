@@ -7,6 +7,7 @@ try:
     import lock_tests
 except ImportError:
     from test import lock_tests
+
     RUNNING_ON_CI = False
 from .. import DynamoLock, FileLock, RedisLock, SocketLock
 
@@ -29,7 +30,7 @@ class DynamoLockTests(lock_tests.LockTests):
 
     def tearDown(self):
         for ithread in threading.enumerate():
-            if hasattr(ithread, 'exit_flag'):
+            if hasattr(ithread, "exit_flag"):
                 ithread.exit_flag.set()
                 ithread.join()
 
@@ -69,7 +70,7 @@ class RedisLockTests(lock_tests.LockTests):
 
     def tearDown(self):
         for ithread in threading.enumerate():
-            if hasattr(ithread, 'exit_flag'):
+            if hasattr(ithread, "exit_flag"):
                 ithread.exit_flag.set()
                 ithread.join()
 

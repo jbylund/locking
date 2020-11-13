@@ -46,4 +46,5 @@ One benefit of this type of solution is that it allows running on spot hardware 
 ### From GitHub
 
 ```
+python -m pip install --upgrade git+https://git@github.com/jbylund/locking.git
 ```
