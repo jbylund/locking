@@ -1,10 +1,10 @@
+import random
 import sys
 import time
-import random
 
 from .utils import get_caller
 
-TIMEOUT_MAX = int(sys.maxsize / 10 ** 9)
+TIMEOUT_MAX = int(sys.maxsize / 10**9)
 
 
 class CouldNotLockException(Exception):
@@ -44,7 +44,11 @@ class BaseLock(object):
                 if timeout != -1:
                     raise ValueError("Cannot set negative timeout on blocking lock.")
             if TIMEOUT_MAX < timeout:
-                raise OverflowError("Cannot set a timeout greater than TIMEOUT_MAX ({}).".format(TIMEOUT_MAX))
+                raise OverflowError(
+                    "Cannot set a timeout greater than TIMEOUT_MAX ({}).".format(
+                        TIMEOUT_MAX
+                    )
+                )
         else:
             if timeout >= 0:
                 raise ValueError("Cannot set timeout on non-blocking lock.")
@@ -54,3 +58,6 @@ class BaseLock(object):
 
     def __del__(self):
         self.release()
+
+    def _at_fork_reinit(self):
+        pass

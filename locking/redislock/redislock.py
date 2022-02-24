@@ -1,7 +1,7 @@
 import json
 import threading
 import time
-from os import getpid, environ
+from os import environ, getpid
 from socket import gethostname
 
 import redis
@@ -13,7 +13,9 @@ from ..heartbeater import HeartBeater
 class RedisLock(BaseLock):
     """simple lock against redis"""
 
-    def __init__(self, lockname=None, block=False, duration=5, heartbeat_interval=2, hosts=None):
+    def __init__(
+        self, lockname=None, block=False, duration=5, heartbeat_interval=2, hosts=None
+    ):
         super(RedisLock, self).__init__(lockname=lockname, block=block)
         self.hosts = hosts or ["127.0.0.1"]
         self.exit_flag = threading.Event()
@@ -57,7 +59,9 @@ class RedisLock(BaseLock):
             conn.client_setname(app_name)
             conn.info()
             return conn
-        msg = "Could not connect to Redis: last_error={}, hosts={}".format(last_error, self.hosts)
+        msg = "Could not connect to Redis: last_error={}, hosts={}".format(
+            last_error, self.hosts
+        )
         raise Exception(msg)
 
     def get_contents(self):
@@ -90,7 +94,9 @@ class RedisLock(BaseLock):
                 else:
                     # check if we need to timeout and how long we've waited
                     # set a ttl if it doesn't have one...
-                    if -1 == self.conn.ttl(self.lockname):  # if it doesn't have an expiry
+                    if -1 == self.conn.ttl(
+                        self.lockname
+                    ):  # if it doesn't have an expiry
                         self.conn.expire(self.lockname, self.duration)  # set one
                     if blocking is False:
                         return False
