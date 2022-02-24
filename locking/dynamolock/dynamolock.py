@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # my pid and instance uniquely identify myself
+import logging
 import os
 import random
 import string
@@ -13,6 +14,8 @@ from .. import BaseLock
 from ..config import get_boto3_client
 from ..heartbeater import HeartBeater
 
+logger = logging.getLogger(__name__)
+
 
 def get_host_id():
     try:
@@ -23,7 +26,7 @@ def get_host_id():
 
 
 def randstr():
-    return "".join(random.choice(string.ascii_lowercase) for _ in range(16))
+    return "".join(random.choices(string.ascii_lowercase, k=16))
 
 
 def pack(local_shape):
@@ -36,7 +39,7 @@ def unpack(aws_shape):
 
 class DynamoLock(BaseLock):
     def __init__(self, lockname=None, table="locks", checkpoint_frequency=2, ttl=5):
-        # lockname = lockname or randstr()
+        lockname = lockname or randstr()
         super(DynamoLock, self).__init__(lockname=lockname)
         self.checkpoint_frequency = checkpoint_frequency
         self.host_id = get_host_id()
@@ -80,7 +83,7 @@ class DynamoLock(BaseLock):
                     },
                 )
             except ClientError as oops:
-                print(oops)
+                logger.warning("Error heartbeating: %s", oops)
 
         def release():
             self.exit_flag.clear()
@@ -110,10 +113,10 @@ class DynamoLock(BaseLock):
             ReturnValues="ALL_OLD",
             ConditionExpression=" OR ".join(
                 [
-                    "attribute_not_exists(lockname)",
-                    "attribute_not_exists(expiry)",
-                    "expiry < :now",
-                    "(host = :host AND pid = :pid AND ( attribute_not_exists(lockid) OR lockid = :lockid ) )",
+                    "attribute_not_exists(lockname)",  # lock does not exist
+                    "attribute_not_exists(expiry)",  # lock has no expiry
+                    "expiry < :now",  # lock is expired
+                    "(host = :host AND pid = :pid AND ( attribute_not_exists(lockid) OR lockid = :lockid ) )",  # this host/process owns the lock and either there is no lockid or the lockid matches ours
                 ]
             ),
             ExpressionAttributeValues={
@@ -144,12 +147,11 @@ class DynamoLock(BaseLock):
                     if error_code == "ResourceNotFoundException":
                         self._create_table()
                     elif error_code == "UnrecognizedClientException":
-                        print(dict(sorted(os.environ.items())))
                         raise
                     elif error_code in ["ConditionalCheckFailedException"]:
                         pass
                     else:
-                        print(oops.response)
+                        raise
             if blocking is False:
                 return False
             if 0 < timeout:

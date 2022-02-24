@@ -1,9 +1,11 @@
-from distutils.core import setup
 import datetime
+from distutils.core import setup
+
 
 def get_readme_contents():
     with open("README.md") as rfh:
         return rfh.read().strip()
+
 
 setup(
     author_email="joseph.bylund@gmail.com",
