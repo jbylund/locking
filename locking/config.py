@@ -19,5 +19,5 @@ def get_boto3_client(service):
             verify=False,
         )
     if get_on_ci():
-        raise AssertionError("You cannot talk to real services from ci!")
+        raise AssertionError(f"Cannot talk to real services as {getuser()}!")
     return boto3.client(service, region_name="us-east-1")
