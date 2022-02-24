@@ -45,9 +45,7 @@ class BaseLock(object):
                     raise ValueError("Cannot set negative timeout on blocking lock.")
             if TIMEOUT_MAX < timeout:
                 raise OverflowError(
-                    "Cannot set a timeout greater than TIMEOUT_MAX ({}).".format(
-                        TIMEOUT_MAX
-                    )
+                    f"Cannot set a timeout greater than TIMEOUT_MAX ({TIMEOUT_MAX})."
                 )
         else:
             if timeout >= 0:

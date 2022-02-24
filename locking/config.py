@@ -9,12 +9,12 @@ def get_on_ci():
 
 
 def get_boto3_client(service):
-    env_var_name = "{}_PORT".format(service.upper())
+    env_var_name = f"{service.upper()}_PORT"
     env_port = environ.get(env_var_name)
     if env_port:
         return boto3.client(
             service,
-            endpoint_url="http://localhost:{}".format(env_port),
+            endpoint_url=f"http://localhost:{env_port}",
             region_name="us-east-1",
             verify=False,
         )

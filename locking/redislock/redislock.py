@@ -49,7 +49,7 @@ class RedisLock(BaseLock):
 
     def get_conn(self, app_name="master"):
         last_error = None
-        app_name = "{}:{}:{}".format(gethostname(), getpid(), app_name)
+        app_name = f"{gethostname()}:{getpid()}:{app_name}"
         for host in self.hosts:
             conn = redis.StrictRedis(
                 host=host,
@@ -59,9 +59,7 @@ class RedisLock(BaseLock):
             conn.client_setname(app_name)
             conn.info()
             return conn
-        msg = "Could not connect to Redis: last_error={}, hosts={}".format(
-            last_error, self.hosts
-        )
+        msg = f"Could not connect to Redis: last_error={last_error}, hosts={self.hosts}"
         raise Exception(msg)
 
     def get_contents(self):
