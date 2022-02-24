@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name="locking",
-    version="1.1.1",
+    version="1.1.2",
     packages=[
         "locking",
         "locking.filelock",
