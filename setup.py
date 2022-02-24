@@ -29,5 +29,5 @@ setup(
         "locking.socketlock",
     ],
     url="https://github.com/jbylund/locking",
-    version=f"1.1.4",
+    version="1.1.5",
 )
