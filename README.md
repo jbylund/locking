@@ -19,28 +19,34 @@ One benefit of this type of solution is that it allows running on spot hardware 
 
 ### SocketLock
 
-```
+```python
+# todo
 ```
 
 ### FileLock
 
-```
+```python
+# todo
 ```
 
 ### RedisLock
 
-```
+```python
+# todo
 ```
 
 ### DynamoLock
 
+```python
+# todo
 ```
-```
+
 ## <a id='installation'>Installation</a>
 
 ### From PyPI
 
-```
+```python
+# todo
 ```
 
 ### From GitHub
