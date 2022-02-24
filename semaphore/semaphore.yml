@@ -27,12 +27,13 @@ blocks:
             - tar -xf v${PYVERSION}.tar.gz -C /tmp
             - cp -r /tmp/cpython-${PYVERSION}/Lib/test ~/cpython_tests
             - export PYTHONPATH=~/cpython_tests/
+            - python -m pip install --upgrade pip
             - python -m pip install -r requirements.txt > /dev/null
-            - python -m pip install flake8 pytest > /dev/null
+            - python -m pip install --upgrade flake8 pytest > /dev/null
             - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
             - >-
               flake8 . --count --exit-zero --max-complexity=10 --max-line-length=160 --statistics
             - sem-service start redis
             - docker run --detach --publish ${DYNAMODB_PORT}:8000 amazon/dynamodb-local
             - env | sort | grep PORT
-            - /usr/bin/time -v timeout 90s python -m pytest -vvv
+            - /usr/bin/time -v timeout 90s python -m pytest -vvv -s
