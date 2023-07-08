@@ -3,6 +3,7 @@ import threading
 import time
 from _thread import start_new_thread
 from .. import FileLock, SocketLock
+from ..custom_exceptions import CouldNotLockException
 
 try:
     # try to import lock_tests as if it has been distributed with cpython
@@ -37,6 +38,11 @@ class LockTClass(lock_tests.LockTests):
 class SocketLockTests(LockTClass):
     locktype = staticmethod(SocketLock)
 
+    def test_raises_right_exception(self):
+        with SocketLock(lockname="uniquename"):
+            with self.assertRaises(CouldNotLockException):
+                with SocketLock(lockname="uniquename"):
+                    pass
 
 class FileLockTests(LockTClass):
     locktype = staticmethod(FileLock)
