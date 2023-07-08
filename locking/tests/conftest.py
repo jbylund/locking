@@ -1,3 +1,4 @@
+
 def pytest_collection_modifyitems(session, config, items):
     def _sortkey(item):
         return (item.cls.__name__, item.location)
