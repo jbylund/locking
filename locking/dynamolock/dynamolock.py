@@ -39,7 +39,7 @@ def unpack(aws_shape):
 class DynamoLock(BaseLock):
     def __init__(self, lockname=None, table="locks", checkpoint_frequency=2, ttl=5):
         lockname = lockname or randstr()
-        super(DynamoLock, self).__init__(lockname=lockname)
+        super().__init__(lockname=lockname)
         self.checkpoint_frequency = checkpoint_frequency
         self.host_id = get_host_id()
         self.pid = str(os.getpid())  # this is weird, but boto3 wants to get the values as strings, even if they're ints

@@ -12,7 +12,7 @@ class SocketLock(BaseLock):
 
     def __init__(self, lockname=None):
         """Create a socket lock in the unlocked state."""
-        super(SocketLock, self).__init__(lockname=lockname)
+        super().__init__(lockname=lockname)
         self.socket_name = chr(0) + self.lockname
         self._lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
 
