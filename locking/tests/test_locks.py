@@ -8,8 +8,14 @@ try:
     import lock_tests
 except ImportError:
     from test import lock_tests
-
     RUNNING_ON_CI = False
+
+try:
+    wait_threads_exit = lock_tests.support.threading_helper.wait_threads_exit
+except AttributeError:
+    wait_threads_exit = lock_tests.support.wait_threads_exit
+
+
 from .. import FileLock, SocketLock
 
 logger = logging.getLogger("lock_tests")
@@ -62,7 +68,7 @@ else:
                 lock.acquire()
                 phase.append(None)
 
-            with lock_tests.support.wait_threads_exit(timeout=5):
+            with wait_threads_exit(timeout=5):
                 start_new_thread(f, ())
                 while len(phase) == 0:
                     _wait()
@@ -110,7 +116,7 @@ else:
                 lock.acquire()
                 phase.append(None)
 
-            with lock_tests.support.wait_threads_exit(timeout=5):
+            with wait_threads_exit(timeout=5):
                 start_new_thread(f, ())
                 while len(phase) == 0:
                     _wait()

@@ -7,7 +7,6 @@ import string
 import threading
 import time
 
-import boto3
 from botocore.errorfactory import ClientError
 
 from .. import BaseLock
