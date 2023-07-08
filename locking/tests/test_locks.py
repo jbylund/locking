@@ -4,13 +4,16 @@ import time
 from _thread import start_new_thread
 from .. import FileLock, SocketLock
 
-RUNNING_ON_CI = True
 try:
-    import lock_tests
-except ImportError:
+    # try to import lock_tests as if it has been distributed with cpython
     from test import lock_tests
-
-    RUNNING_ON_CI = False
+except ImportError:
+    # failing that assume we're in ci and we've put the cpython_tests directory
+    # in the home directory
+    import pathlib
+    import sys
+    sys.path = [pathlib.Path("~/cpython_tests").expanduser().as_posix()] + sys.path
+    import lock_tests
 
 try:
     wait_threads_exit = lock_tests.support.threading_helper.wait_threads_exit
