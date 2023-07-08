@@ -3,12 +3,9 @@ import sys
 import time
 
 from .utils import get_caller
+from .custom_exceptions import CouldNotLockException
 
 TIMEOUT_MAX = int(sys.maxsize / 10**9)
-
-
-class CouldNotLockException(Exception):
-    pass
 
 
 class BaseLock:

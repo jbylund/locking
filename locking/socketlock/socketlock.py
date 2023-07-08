@@ -4,7 +4,7 @@ import random
 import socket
 import time
 
-from .. import BaseLock
+from .. import BaseLock, CouldNotLockException
 
 
 class SocketLock(BaseLock):
@@ -45,7 +45,7 @@ class SocketLock(BaseLock):
                                 return False
                     time.sleep(random.random() * 0.005)
                 else:
-                    raise
+                    raise CouldNotLockException()
 
     def release(self):
         """Release the lock."""
