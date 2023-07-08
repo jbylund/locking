@@ -28,8 +28,7 @@ blocks:
             - cp -r /tmp/cpython-${PYVERSION}/Lib/test ~/cpython_tests
             - export PYTHONPATH=~/cpython_tests/
             - python -m pip install --upgrade pip
-            - python -m pip install -r requirements.txt > /dev/null
-            - python -m pip install --upgrade flake8 pytest > /dev/null
+            - python -m pip install --upgrade --force .[all]
             - flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
             - >-
               flake8 . --count --exit-zero --max-complexity=10 --max-line-length=160 --statistics
