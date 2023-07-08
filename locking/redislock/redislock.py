@@ -15,7 +15,9 @@ class RedisLock(BaseLock):
 
     def __init__(self, lockname=None, block=False, duration=5, heartbeat_interval=2, hosts=None):
         super(RedisLock, self).__init__(lockname=lockname, block=block)
-        self.hosts = hosts or ["127.0.0.1"]
+        if hosts is None:
+            hosts = [environ.get("REDIS_HOST", "127.0.0.1")]
+        self.hosts = hosts
         self.exit_flag = threading.Event()
         self.duration = duration * 1000
         self.heartbeat_interval = heartbeat_interval
