@@ -2,12 +2,14 @@ import logging
 import threading
 import time
 from _thread import start_new_thread
+from .. import FileLock, SocketLock
 
 RUNNING_ON_CI = True
 try:
     import lock_tests
 except ImportError:
     from test import lock_tests
+
     RUNNING_ON_CI = False
 
 try:
@@ -15,8 +17,6 @@ try:
 except AttributeError:
     wait_threads_exit = lock_tests.support.wait_threads_exit
 
-
-from .. import FileLock, SocketLock
 
 logger = logging.getLogger("lock_tests")
 
@@ -28,9 +28,7 @@ def _wait():
 
 class LockTClass(lock_tests.LockTests):
     def test_at_fork_reinit(self):
-        logger.warning(
-            "Not running test of _at_fork_reinit because I haven't done it yet"
-        )
+        logger.warning("Not running test of _at_fork_reinit because I haven't done it yet")
 
 
 class SocketLockTests(LockTClass):

@@ -1,0 +1,7 @@
+[tool.ruff]
+ignore-init-module-imports = true
+line-length = 132
+
+
+[tool.black]
+line-length = 132

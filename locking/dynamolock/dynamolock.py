@@ -42,9 +42,7 @@ class DynamoLock(BaseLock):
         super(DynamoLock, self).__init__(lockname=lockname)
         self.checkpoint_frequency = checkpoint_frequency
         self.host_id = get_host_id()
-        self.pid = str(
-            os.getpid()
-        )  # this is weird, but boto3 wants to get the values as strings, even if they're ints
+        self.pid = str(os.getpid())  # this is weird, but boto3 wants to get the values as strings, even if they're ints
         self.lockid = str(random.randint(10**16, 10**20))
         self.ttl = ttl
         self.table = table
@@ -110,12 +108,15 @@ class DynamoLock(BaseLock):
             TableName=self.table,
             Item=self.getitem(),
             ReturnValues="ALL_OLD",
+
             ConditionExpression=" OR ".join(
                 [
                     "attribute_not_exists(lockname)",  # lock does not exist
                     "attribute_not_exists(expiry)",  # lock has no expiry
                     "expiry < :now",  # lock is expired
-                    "(host = :host AND pid = :pid AND ( attribute_not_exists(lockid) OR lockid = :lockid ) )",  # this host/process owns the lock and either there is no lockid or the lockid matches ours
+                    #
+                    # this host/process owns the lock and either there is no lockid or the lockid matches ours
+                    "(host = :host AND pid = :pid AND ( attribute_not_exists(lockid) OR lockid = :lockid ) )",
                 ]
             ),
             ExpressionAttributeValues={
