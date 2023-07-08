@@ -9,7 +9,7 @@ class HeartBeater(threading.Thread):
 
     def __init__(self, interval=25, heartbeat=lambda: True, exit_flag=None, release=lambda: True):
         """Construct the heartbeater thread object."""
-        super(HeartBeater, self).__init__()
+        super().__init__()
         assert exit_flag is not None
 
         # daemon thread so that when the parent exits it will disappear (we're going to try to clean it up anyways)

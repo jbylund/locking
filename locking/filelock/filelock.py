@@ -20,7 +20,7 @@ class FileLock(BaseLock):
     lockdir = get_lockdir.__func__()
 
     def __init__(self, lockname=None, block=False):
-        super(FileLock, self).__init__(lockname=lockname, block=block)
+        super().__init__(lockname=lockname, block=block)
         self.lockname = "_".join(self.lockname.split("/"))
         self._lock_file = os.path.join(self.lockdir, self.lockname)
         self._lock_file_fd = None
@@ -37,7 +37,7 @@ class FileLock(BaseLock):
                 self._lock_file_fd = fd
                 self._locked = True
                 return True
-            except (IOError, OSError):
+            except OSError:
                 os.close(fd)
                 # did not get the lock this attempt
                 if not blocking:

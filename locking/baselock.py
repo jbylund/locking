@@ -11,7 +11,7 @@ class CouldNotLockException(Exception):
     pass
 
 
-class BaseLock(object):
+class BaseLock:
     def __init__(self, lockname=None, block=True):
         self.lockname = lockname or get_caller()
         self.block = block
@@ -25,12 +25,12 @@ class BaseLock(object):
         self.release()
 
     def __repr__(self):
-        return "<%s %s.%s object at %s>" % (
-            "locked" if self._locked else "unlocked",
-            self.__class__.__module__,
-            self.__class__.__qualname__,
-            hex(id(self)),
-        )  # do I need to add owner/count?
+        lock_state = "locked" if self._locked else "unlocked"
+        clsname = self.__class__.__module__
+        qualname = self.__class__.__qualname__
+        objid = hex(id(self))
+        # do I need to add owner/count?
+        return f"<{lock_state} {clsname}.{qualname} object at {objid}>"
 
     def locked(self):
         return self._locked
@@ -57,3 +57,6 @@ class BaseLock(object):
 
     def _at_fork_reinit(self):
         pass
+
+    def release(self):
+        pass  # does it make more sense to raise an assertion here? Or just ignore it?
