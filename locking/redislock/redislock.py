@@ -14,7 +14,7 @@ class RedisLock(BaseLock):
     """simple lock against redis"""
 
     def __init__(self, lockname=None, block=False, duration=5, heartbeat_interval=2, hosts=None):
-        super(RedisLock, self).__init__(lockname=lockname, block=block)
+        super().__init__(lockname=lockname, block=block)
         if hosts is None:
             hosts = [environ.get("REDIS_HOST", "127.0.0.1")]
         self.hosts = hosts
