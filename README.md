@@ -1,6 +1,6 @@
 # locking
 
-[![build status](https://jbylund.semaphoreci.com/badges/locking/branches/master.svg?style=semaphore)](https://jbylund.semaphoreci.com/branches/a07cc01d-abee-46d0-8557-64abee8fbfc2)
+[![build status](https://jbylund.semaphoreci.com/badges/locking/branches/main.svg?style=semaphore)](https://jbylund.semaphoreci.com/branches/49af923c-182a-4118-aa9f-d7c2aa5debf7)
 
 
 1. [Overview](#overview)
