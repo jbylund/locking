@@ -8,8 +8,11 @@ RUNNING_ON_CI = True
 try:
     import lock_tests
 except ImportError:
-    from test import lock_tests
+    import pathlib
+    import sys
+    sys.path = [pathlib.Path("~/cpython_tests").expanduser().as_posix()] + sys.path
 
+    from test import lock_tests
     RUNNING_ON_CI = False
 
 try:
