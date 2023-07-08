@@ -56,8 +56,3 @@ class FileLock(BaseLock):
         fcntl.flock(fd, fcntl.LOCK_UN)
         self._locked = False
         os.close(fd)
-
-    if True:
-
-        def __del__(self):
-            self.release()
