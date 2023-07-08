@@ -44,8 +44,16 @@ class FileLockTests(LockTClass):
 
 try:
     from .. import DynamoLock
+    import boto3
+    import botocore
+
+    boto3.client("sts").get_caller_identity()
+
+
 except ImportError:
-    logging.warning("Not running tests for DynamoLock")
+    logger.warning("Not running tests for DynamoLock, missing dependency")
+except (botocore.exceptions.NoCredentialsError, botocore.exceptions.ClientError):
+    logger.warning("Not running tests for DynamoLock, missing credentials")
 else:
 
     class DynamoLockTests(LockTClass):
