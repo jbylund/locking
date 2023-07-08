@@ -1,4 +1,3 @@
-import datetime
 from distutils.core import setup
 
 
